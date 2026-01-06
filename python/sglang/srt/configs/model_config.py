@@ -55,6 +55,7 @@ def is_deepseek_nsa(config: PretrainedConfig) -> bool:
         config.architectures is not None
         and config.architectures[0]
         in [
+            "AXK1ForCausalLM",
             "DeepseekV3ForCausalLM",
             "DeepseekV32ForCausalLM",
             "DeepseekV3ForCausalLMNextN",
@@ -372,7 +373,8 @@ class ModelConfig:
 
         # FIXME: temporary special judge for MLA architecture
         if (
-            "DeepseekV2ForCausalLM" in self.hf_config.architectures
+            "AXK1ForCausalLM" in self.hf_config.architectures
+            or "DeepseekV2ForCausalLM" in self.hf_config.architectures
             or "DeepseekV32ForCausalLM" in self.hf_config.architectures
             or "DeepseekV3ForCausalLM" in self.hf_config.architectures
             or "DeepseekV3ForCausalLMNextN" in self.hf_config.architectures

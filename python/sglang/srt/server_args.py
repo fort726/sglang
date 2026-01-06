@@ -1020,6 +1020,7 @@ class ServerArgs:
             self.dtype = "bfloat16"
 
         if model_arch in [
+            "AXK1ForCausalLM",
             "DeepseekV3ForCausalLM",
             "MistralLarge3ForCausalLM",
             "PixtralForConditionalGeneration",
@@ -1121,7 +1122,7 @@ class ServerArgs:
                     # Default DeepSeek V3/R1 native FP8 when not explicitly set,
                     # Because we need this condition for an assertion in
                     # flashinfer_trtllm MoE runner backend.
-                    if quant_method is None and model_arch in ["DeepseekV3ForCausalLM"]:
+                    if quant_method is None and model_arch in ["AXK1ForCausalLM", "DeepseekV3ForCausalLM"]:
                         self.quantization = "fp8"
                         logger.info(
                             "Quantization not specified, default to fp8 for DeepSeek on sm100"
@@ -1478,6 +1479,7 @@ class ServerArgs:
             not self.enable_flashinfer_allreduce_fusion
             and model_arch
             in [
+                "AXK1ForCausalLM",
                 "DeepseekV3ForCausalLM",
                 "GptOssForCausalLM",
                 "Glm4MoeForCausalLM",
@@ -2027,6 +2029,7 @@ class ServerArgs:
 
             model_arch = self.get_model_config().hf_config.architectures[0]
             if model_arch in [
+                "AXK1ForCausalLM",
                 "DeepseekV32ForCausalLM",
                 "DeepseekV3ForCausalLM",
                 "Glm4MoeForCausalLM",
@@ -2309,6 +2312,7 @@ class ServerArgs:
                     hf_config = self.get_model_config().hf_config
                     model_arch = hf_config.architectures[0]
                     is_deepseek_model = model_arch in [
+                        "AXK1ForCausalLM",
                         "DeepseekV2ForCausalLM",
                         "DeepseekV3ForCausalLM",
                         "DeepseekV32ForCausalLM",
@@ -5157,6 +5161,7 @@ def auto_choose_speculative_params(self: ServerArgs):
         # The default value for llama
         return (5, 4, 8)
     elif arch in [
+        "AXK1ForCausalLM",
         "DeepseekV32ForCausalLM",
         "DeepseekV3ForCausalLM",
         "DeepseekV2ForCausalLM",
