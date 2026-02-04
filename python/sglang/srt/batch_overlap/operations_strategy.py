@@ -33,7 +33,7 @@ class OperationsStrategy:
         forward_mode: ForwardMode,
     ) -> "OperationsStrategy":
         layer_name = layers[0].__class__.__name__
-        if layer_name == "AXK1DecoderLayer" or layer_name == "DeepseekV2DecoderLayer":
+        if layer_name == "DeepseekV2DecoderLayer":
             return OperationsStrategy.concat(
                 [
                     _compute_moe_deepseek_layer_operations_strategy_tbo(

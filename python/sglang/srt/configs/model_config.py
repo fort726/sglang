@@ -56,7 +56,6 @@ def is_deepseek_nsa(config: PretrainedConfig) -> bool:
         config.architectures is not None
         and config.architectures[0]
         in [
-            "AXK1ForCausalLM",
             "DeepseekV3ForCausalLM",
             "DeepseekV32ForCausalLM",
             "DeepseekV3ForCausalLMNextN",
