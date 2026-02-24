@@ -107,7 +107,20 @@ class AXK1MLP(DeepseekV2MLP):
 
 
 class AXK1MoE(DeepseekV2MoE):
-    pass
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # A.X-K1 uses scoring_func="sigmoid" with topk_method="none".
+        # When correction_bias is None, select_experts routes to grouped_topk
+        # which hardcodes softmax. biased_grouped_topk correctly uses sigmoid.
+        # Set a zero correction_bias to route to the sigmoid path (adding 0 is a no-op).
+        if self.gate.e_score_correction_bias is None:
+            zero_bias = nn.Parameter(
+                torch.zeros(self.gate.weight.shape[0], dtype=torch.float32),
+                requires_grad=False,
+            )
+            self.gate.e_score_correction_bias = zero_bias
+            self.topk.topk_config.correction_bias = zero_bias
 
 
 class AXK1AttentionMLA(DeepseekV2AttentionMLA):
@@ -302,6 +315,13 @@ class AXK1DecoderLayer(nn.Module):
 
         if isinstance(self.mlp, AXK1MLP):
             gemm_output_zero_allocator = None
+
+        # A.X-K1 has post_mlp_layernorm that must be applied after all-reduce
+        # but before residual addition. This is incompatible with allreduce fusion
+        # which fuses all-reduce + residual_add + layernorm into one operation.
+        # Force allreduce fusion off for MoE layers that need post_mlp_layernorm.
+        if self.is_layer_sparse:
+            should_allreduce_fusion = False
 
         hidden_states = self.mlp(
             hidden_states,
